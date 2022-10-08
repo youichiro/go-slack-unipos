@@ -6,3 +6,5 @@ migrate-up:
 	docker compose run --rm migrate make up
 migrate-down:
 	docker compose run --rm migrate make down
+migrate-force:
+	docker compose run --rm migrate make force
