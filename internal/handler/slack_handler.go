@@ -1,41 +1,17 @@
 package handler
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 
 	"github.com/gin-gonic/gin"
 	"github.com/slack-go/slack"
+	"github.com/youichiro/go-slack-my-unipos/internal/util"
 )
 
 type SlackHandler struct {
 	SigninSecret string
 	Token        string
-}
-
-func verifySigningSecret(c *gin.Context, signingSecret string) error {
-	verifier, err := slack.NewSecretsVerifier(c.Request.Header, signingSecret)
-	if err != nil {
-		fmt.Println(err.Error())
-		return err
-	}
-
-	body, err := io.ReadAll(c.Request.Body)
-	if err != nil {
-		fmt.Println(err.Error())
-		return err
-	}
-	c.Request.Body = io.NopCloser(bytes.NewBuffer(body))
-
-	verifier.Write(body)
-	if err = verifier.Ensure(); err != nil {
-		fmt.Println(err.Error())
-		return err
-	}
-
-	return nil
 }
 
 func generateModalRequest() slack.ModalViewRequest {
@@ -78,7 +54,7 @@ func generateModalRequest() slack.ModalViewRequest {
 }
 
 func (h SlackHandler) HandleSlash(c *gin.Context) {
-	err := verifySigningSecret(c, h.SigninSecret)
+	err := util.VerifySigningSecret(c, h.SigninSecret)
 	if err != nil {
 		c.IndentedJSON(401, gin.H{"message": err})
 	}
@@ -102,7 +78,7 @@ func (h SlackHandler) HandleSlash(c *gin.Context) {
 }
 
 func (h SlackHandler) HandleModal(c *gin.Context) {
-	err := verifySigningSecret(c, h.SigninSecret)
+	err := util.VerifySigningSecret(c, h.SigninSecret)
 	if err != nil {
 		c.IndentedJSON(401, gin.H{"message": err})
 	}
