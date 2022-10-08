@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/slack-go/slack"
@@ -22,7 +23,7 @@ func generateModalRequest() slack.ModalViewRequest {
 	memberSelectLabel := slack.NewTextBlockObject("plain_text", "誰に送りますか？", false, false)
 	memberSelectPlaceholder := slack.NewTextBlockObject("plain_text", "メンバーを選択してください", false, false)
 	memberSelectOptions := slack.NewOptionsSelectBlockElement(slack.MultiOptTypeUser, memberSelectPlaceholder, "member")
-	memberSelect := slack.NewInputBlock("Select member", memberSelectLabel, nil, memberSelectOptions)
+	memberSelect := slack.NewInputBlock("Members", memberSelectLabel, nil, memberSelectOptions)
 
 	pointLabel := slack.NewTextBlockObject("plain_text", "ポイント", false, false)
 	pointPlaceholder := slack.NewTextBlockObject("plain_text", "39", false, false)
@@ -88,16 +89,19 @@ func (h SlackHandler) HandleModal(c *gin.Context) {
 		c.IndentedJSON(401, gin.H{"message": err})
 	}
 
-	// Note there might be a better way to get this info, but I figured this structure out from looking at the json response
-	firstName := i.View.State.Values["First Name"]["firstName"].Value
-	lastName := i.View.State.Values["Last Name"]["lastName"].Value
+	// members := i.View.State.Values["Members"]["member"].SelectedUsers
+	// member := members[0]
+	point := i.View.State.Values["Point"]["point"].Value
+	message := i.View.State.Values["Message"]["message"].Value
 
-	msg := fmt.Sprintf("Hello %s %s, nice to meet you!", firstName, lastName)
+	msg := fmt.Sprintf("point: %s, message: %s", point, message)
 
 	api := slack.New(h.Token)
-	_, _, err = api.PostMessage(i.User.ID,
+	_, _, err = api.PostMessage(
+		os.Getenv("SLACK_UNIPOS_CHANNEL_ID"),
 		slack.MsgOptionText(msg, false),
-		slack.MsgOptionAttachments())
+		slack.MsgOptionAttachments(),
+	)
 	if err != nil {
 		c.IndentedJSON(401, gin.H{"message": err})
 	}
