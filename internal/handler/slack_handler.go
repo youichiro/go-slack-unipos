@@ -70,10 +70,10 @@ func (h SlackHandler) HandleSlash(c *gin.Context) {
 		modalRequest := generateModalRequest()
 		_, err = api.OpenView(s.TriggerID, modalRequest)
 		if err != nil {
-			fmt.Printf("Error opening view: %s", err)
+			c.IndentedJSON(500, gin.H{"message": err})
 		}
 	default:
-		c.IndentedJSON(500, gin.H{"message": "hg"})
+		c.IndentedJSON(500, gin.H{"message": "Command not registered: " + s.Command})
 	}
 }
 
@@ -89,18 +89,19 @@ func (h SlackHandler) HandleModal(c *gin.Context) {
 		c.IndentedJSON(401, gin.H{"message": err})
 	}
 
-	// members := i.View.State.Values["Members"]["member"].SelectedUsers
-	// member := members[0]
+	sendUserId := i.User.ID
+	userIDs := i.View.State.Values["Members"]["member"].SelectedUsers
+	userID := userIDs[0]
 	point := i.View.State.Values["Point"]["point"].Value
 	message := i.View.State.Values["Message"]["message"].Value
 
-	msg := fmt.Sprintf("point: %s, message: %s", point, message)
+	msg := fmt.Sprintf("from: <@%s>, to: <@%s>, point: %s, message: %s", sendUserId, userID, point, message)
 
 	api := slack.New(h.Token)
 	_, _, err = api.PostMessage(
 		os.Getenv("SLACK_UNIPOS_CHANNEL_ID"),
 		slack.MsgOptionText(msg, false),
-		slack.MsgOptionAttachments(),
+		slack.MsgOptionEnableLinkUnfurl(),
 	)
 	if err != nil {
 		c.IndentedJSON(401, gin.H{"message": err})
