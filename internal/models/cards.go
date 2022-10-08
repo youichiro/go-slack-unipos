@@ -23,42 +23,47 @@ import (
 
 // Card is an object representing the database table.
 type Card struct {
-	ID             int    `boil:"id" json:"id" toml:"id" yaml:"id"`
-	SourceMemberID string `boil:"source_member_id" json:"source_member_id" toml:"source_member_id" yaml:"source_member_id"`
-	TargetMemberID string `boil:"target_member_id" json:"target_member_id" toml:"target_member_id" yaml:"target_member_id"`
-	Point          int16  `boil:"point" json:"point" toml:"point" yaml:"point"`
-	Message        string `boil:"message" json:"message" toml:"message" yaml:"message"`
+	ID                  int       `boil:"id" json:"id" toml:"id" yaml:"id"`
+	SenderMemberID      int       `boil:"sender_member_id" json:"sender_member_id" toml:"sender_member_id" yaml:"sender_member_id"`
+	DistinationMemberID int       `boil:"distination_member_id" json:"distination_member_id" toml:"distination_member_id" yaml:"distination_member_id"`
+	Point               int16     `boil:"point" json:"point" toml:"point" yaml:"point"`
+	Message             string    `boil:"message" json:"message" toml:"message" yaml:"message"`
+	CreatedAt           time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
 	R *cardR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L cardL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var CardColumns = struct {
-	ID             string
-	SourceMemberID string
-	TargetMemberID string
-	Point          string
-	Message        string
+	ID                  string
+	SenderMemberID      string
+	DistinationMemberID string
+	Point               string
+	Message             string
+	CreatedAt           string
 }{
-	ID:             "id",
-	SourceMemberID: "source_member_id",
-	TargetMemberID: "target_member_id",
-	Point:          "point",
-	Message:        "message",
+	ID:                  "id",
+	SenderMemberID:      "sender_member_id",
+	DistinationMemberID: "distination_member_id",
+	Point:               "point",
+	Message:             "message",
+	CreatedAt:           "created_at",
 }
 
 var CardTableColumns = struct {
-	ID             string
-	SourceMemberID string
-	TargetMemberID string
-	Point          string
-	Message        string
+	ID                  string
+	SenderMemberID      string
+	DistinationMemberID string
+	Point               string
+	Message             string
+	CreatedAt           string
 }{
-	ID:             "cards.id",
-	SourceMemberID: "cards.source_member_id",
-	TargetMemberID: "cards.target_member_id",
-	Point:          "cards.point",
-	Message:        "cards.message",
+	ID:                  "cards.id",
+	SenderMemberID:      "cards.sender_member_id",
+	DistinationMemberID: "cards.distination_member_id",
+	Point:               "cards.point",
+	Message:             "cards.message",
+	CreatedAt:           "cards.created_at",
 }
 
 // Generated where
@@ -79,29 +84,6 @@ func (w whereHelperint) IN(slice []int) qm.QueryMod {
 	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
 }
 func (w whereHelperint) NIN(slice []int) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
-}
-
-type whereHelperstring struct{ field string }
-
-func (w whereHelperstring) EQ(x string) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.EQ, x) }
-func (w whereHelperstring) NEQ(x string) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
-func (w whereHelperstring) LT(x string) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.LT, x) }
-func (w whereHelperstring) LTE(x string) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
-func (w whereHelperstring) GT(x string) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
-func (w whereHelperstring) GTE(x string) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
-func (w whereHelperstring) IN(slice []string) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
-}
-func (w whereHelperstring) NIN(slice []string) qm.QueryMod {
 	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
@@ -132,26 +114,79 @@ func (w whereHelperint16) NIN(slice []int16) qm.QueryMod {
 	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
 }
 
+type whereHelperstring struct{ field string }
+
+func (w whereHelperstring) EQ(x string) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.EQ, x) }
+func (w whereHelperstring) NEQ(x string) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
+func (w whereHelperstring) LT(x string) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.LT, x) }
+func (w whereHelperstring) LTE(x string) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
+func (w whereHelperstring) GT(x string) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
+func (w whereHelperstring) GTE(x string) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
+func (w whereHelperstring) IN(slice []string) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
+}
+func (w whereHelperstring) NIN(slice []string) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
+}
+
+type whereHelpertime_Time struct{ field string }
+
+func (w whereHelpertime_Time) EQ(x time.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.EQ, x)
+}
+func (w whereHelpertime_Time) NEQ(x time.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.NEQ, x)
+}
+func (w whereHelpertime_Time) LT(x time.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LT, x)
+}
+func (w whereHelpertime_Time) LTE(x time.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LTE, x)
+}
+func (w whereHelpertime_Time) GT(x time.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GT, x)
+}
+func (w whereHelpertime_Time) GTE(x time.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GTE, x)
+}
+
 var CardWhere = struct {
-	ID             whereHelperint
-	SourceMemberID whereHelperstring
-	TargetMemberID whereHelperstring
-	Point          whereHelperint16
-	Message        whereHelperstring
+	ID                  whereHelperint
+	SenderMemberID      whereHelperint
+	DistinationMemberID whereHelperint
+	Point               whereHelperint16
+	Message             whereHelperstring
+	CreatedAt           whereHelpertime_Time
 }{
-	ID:             whereHelperint{field: "\"cards\".\"id\""},
-	SourceMemberID: whereHelperstring{field: "\"cards\".\"source_member_id\""},
-	TargetMemberID: whereHelperstring{field: "\"cards\".\"target_member_id\""},
-	Point:          whereHelperint16{field: "\"cards\".\"point\""},
-	Message:        whereHelperstring{field: "\"cards\".\"message\""},
+	ID:                  whereHelperint{field: "\"cards\".\"id\""},
+	SenderMemberID:      whereHelperint{field: "\"cards\".\"sender_member_id\""},
+	DistinationMemberID: whereHelperint{field: "\"cards\".\"distination_member_id\""},
+	Point:               whereHelperint16{field: "\"cards\".\"point\""},
+	Message:             whereHelperstring{field: "\"cards\".\"message\""},
+	CreatedAt:           whereHelpertime_Time{field: "\"cards\".\"created_at\""},
 }
 
 // CardRels is where relationship names are stored.
 var CardRels = struct {
-}{}
+	DistinationMember string
+	SenderMember      string
+}{
+	DistinationMember: "DistinationMember",
+	SenderMember:      "SenderMember",
+}
 
 // cardR is where relationships are stored.
 type cardR struct {
+	DistinationMember *Member `boil:"DistinationMember" json:"DistinationMember" toml:"DistinationMember" yaml:"DistinationMember"`
+	SenderMember      *Member `boil:"SenderMember" json:"SenderMember" toml:"SenderMember" yaml:"SenderMember"`
 }
 
 // NewStruct creates a new relationship struct
@@ -159,13 +194,27 @@ func (*cardR) NewStruct() *cardR {
 	return &cardR{}
 }
 
+func (r *cardR) GetDistinationMember() *Member {
+	if r == nil {
+		return nil
+	}
+	return r.DistinationMember
+}
+
+func (r *cardR) GetSenderMember() *Member {
+	if r == nil {
+		return nil
+	}
+	return r.SenderMember
+}
+
 // cardL is where Load methods for each relationship are stored.
 type cardL struct{}
 
 var (
-	cardAllColumns            = []string{"id", "source_member_id", "target_member_id", "point", "message"}
-	cardColumnsWithoutDefault = []string{"source_member_id", "target_member_id", "point", "message"}
-	cardColumnsWithDefault    = []string{"id"}
+	cardAllColumns            = []string{"id", "sender_member_id", "distination_member_id", "point", "message", "created_at"}
+	cardColumnsWithoutDefault = []string{"sender_member_id", "distination_member_id", "point", "message"}
+	cardColumnsWithDefault    = []string{"id", "created_at"}
 	cardPrimaryKeyColumns     = []string{"id"}
 	cardGeneratedColumns      = []string{}
 )
@@ -448,6 +497,362 @@ func (q cardQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool,
 	return count > 0, nil
 }
 
+// DistinationMember pointed to by the foreign key.
+func (o *Card) DistinationMember(mods ...qm.QueryMod) memberQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.DistinationMemberID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Members(queryMods...)
+}
+
+// SenderMember pointed to by the foreign key.
+func (o *Card) SenderMember(mods ...qm.QueryMod) memberQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.SenderMemberID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Members(queryMods...)
+}
+
+// LoadDistinationMember allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (cardL) LoadDistinationMember(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCard interface{}, mods queries.Applicator) error {
+	var slice []*Card
+	var object *Card
+
+	if singular {
+		var ok bool
+		object, ok = maybeCard.(*Card)
+		if !ok {
+			object = new(Card)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeCard)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeCard))
+			}
+		}
+	} else {
+		s, ok := maybeCard.(*[]*Card)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeCard)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeCard))
+			}
+		}
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &cardR{}
+		}
+		args = append(args, object.DistinationMemberID)
+
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &cardR{}
+			}
+
+			for _, a := range args {
+				if a == obj.DistinationMemberID {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.DistinationMemberID)
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(
+		qm.From(`members`),
+		qm.WhereIn(`members.id in ?`, args...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Member")
+	}
+
+	var resultSlice []*Member
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Member")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for members")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for members")
+	}
+
+	if len(cardAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.DistinationMember = foreign
+		if foreign.R == nil {
+			foreign.R = &memberR{}
+		}
+		foreign.R.DistinationMemberCards = append(foreign.R.DistinationMemberCards, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.DistinationMemberID == foreign.ID {
+				local.R.DistinationMember = foreign
+				if foreign.R == nil {
+					foreign.R = &memberR{}
+				}
+				foreign.R.DistinationMemberCards = append(foreign.R.DistinationMemberCards, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadSenderMember allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (cardL) LoadSenderMember(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCard interface{}, mods queries.Applicator) error {
+	var slice []*Card
+	var object *Card
+
+	if singular {
+		var ok bool
+		object, ok = maybeCard.(*Card)
+		if !ok {
+			object = new(Card)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeCard)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeCard))
+			}
+		}
+	} else {
+		s, ok := maybeCard.(*[]*Card)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeCard)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeCard))
+			}
+		}
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &cardR{}
+		}
+		args = append(args, object.SenderMemberID)
+
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &cardR{}
+			}
+
+			for _, a := range args {
+				if a == obj.SenderMemberID {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.SenderMemberID)
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(
+		qm.From(`members`),
+		qm.WhereIn(`members.id in ?`, args...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Member")
+	}
+
+	var resultSlice []*Member
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Member")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for members")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for members")
+	}
+
+	if len(cardAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.SenderMember = foreign
+		if foreign.R == nil {
+			foreign.R = &memberR{}
+		}
+		foreign.R.SenderMemberCards = append(foreign.R.SenderMemberCards, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.SenderMemberID == foreign.ID {
+				local.R.SenderMember = foreign
+				if foreign.R == nil {
+					foreign.R = &memberR{}
+				}
+				foreign.R.SenderMemberCards = append(foreign.R.SenderMemberCards, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// SetDistinationMember of the card to the related item.
+// Sets o.R.DistinationMember to related.
+// Adds o to related.R.DistinationMemberCards.
+func (o *Card) SetDistinationMember(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Member) error {
+	var err error
+	if insert {
+		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"cards\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"distination_member_id"}),
+		strmangle.WhereClause("\"", "\"", 2, cardPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, updateQuery)
+		fmt.Fprintln(writer, values)
+	}
+	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.DistinationMemberID = related.ID
+	if o.R == nil {
+		o.R = &cardR{
+			DistinationMember: related,
+		}
+	} else {
+		o.R.DistinationMember = related
+	}
+
+	if related.R == nil {
+		related.R = &memberR{
+			DistinationMemberCards: CardSlice{o},
+		}
+	} else {
+		related.R.DistinationMemberCards = append(related.R.DistinationMemberCards, o)
+	}
+
+	return nil
+}
+
+// SetSenderMember of the card to the related item.
+// Sets o.R.SenderMember to related.
+// Adds o to related.R.SenderMemberCards.
+func (o *Card) SetSenderMember(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Member) error {
+	var err error
+	if insert {
+		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"cards\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"sender_member_id"}),
+		strmangle.WhereClause("\"", "\"", 2, cardPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, updateQuery)
+		fmt.Fprintln(writer, values)
+	}
+	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.SenderMemberID = related.ID
+	if o.R == nil {
+		o.R = &cardR{
+			SenderMember: related,
+		}
+	} else {
+		o.R.SenderMember = related
+	}
+
+	if related.R == nil {
+		related.R = &memberR{
+			SenderMemberCards: CardSlice{o},
+		}
+	} else {
+		related.R.SenderMemberCards = append(related.R.SenderMemberCards, o)
+	}
+
+	return nil
+}
+
 // Cards retrieves all the records using an executor.
 func Cards(mods ...qm.QueryMod) cardQuery {
 	mods = append(mods, qm.From("\"cards\""))
@@ -497,6 +902,13 @@ func (o *Card) Insert(ctx context.Context, exec boil.ContextExecutor, columns bo
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -701,6 +1113,13 @@ func (o CardSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, col
 func (o *Card) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no cards provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
