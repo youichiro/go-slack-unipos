@@ -9,7 +9,7 @@ import (
 	"github.com/slack-go/slack"
 )
 
-func VerifySigningSecret(c *gin.Context, signingSecret string) error {
+func VerifySlackSigningSecret(c *gin.Context, signingSecret string) error {
 	verifier, err := slack.NewSecretsVerifier(c.Request.Header, signingSecret)
 	if err != nil {
 		fmt.Println(err.Error())

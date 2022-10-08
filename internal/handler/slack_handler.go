@@ -54,7 +54,7 @@ func generateModalRequest() slack.ModalViewRequest {
 }
 
 func (h SlackHandler) HandleSlash(c *gin.Context) {
-	err := util.VerifySigningSecret(c, h.SigninSecret)
+	err := util.VerifySlackSigningSecret(c, h.SigninSecret)
 	if err != nil {
 		c.IndentedJSON(401, gin.H{"message": err})
 	}
@@ -78,7 +78,7 @@ func (h SlackHandler) HandleSlash(c *gin.Context) {
 }
 
 func (h SlackHandler) HandleModal(c *gin.Context) {
-	err := util.VerifySigningSecret(c, h.SigninSecret)
+	err := util.VerifySlackSigningSecret(c, h.SigninSecret)
 	if err != nil {
 		c.IndentedJSON(401, gin.H{"message": err})
 	}
