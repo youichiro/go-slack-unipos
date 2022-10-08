@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/slack-go/slack"
@@ -28,6 +29,7 @@ func generateModalRequest() slack.ModalViewRequest {
 	pointLabel := slack.NewTextBlockObject("plain_text", "ポイント", false, false)
 	pointPlaceholder := slack.NewTextBlockObject("plain_text", "39", false, false)
 	pointElement := slack.NewPlainTextInputBlockElement(pointPlaceholder, "point")
+	pointElement.MaxLength = 3
 	point := slack.NewInputBlock("Point", pointLabel, nil, pointElement)
 
 	messageLabel := slack.NewTextBlockObject("plain_text", "メッセージ本文", false, false)
@@ -57,11 +59,13 @@ func (h SlackHandler) HandleSlash(c *gin.Context) {
 	err := util.VerifySlackSigningSecret(c, h.SigninSecret)
 	if err != nil {
 		c.IndentedJSON(401, gin.H{"message": err})
+		return
 	}
 
 	s, err := slack.SlashCommandParse(c.Request)
 	if err != nil {
 		c.IndentedJSON(500, gin.H{"message": err})
+		return
 	}
 
 	switch s.Command {
@@ -71,9 +75,12 @@ func (h SlackHandler) HandleSlash(c *gin.Context) {
 		_, err = api.OpenView(s.TriggerID, modalRequest)
 		if err != nil {
 			c.IndentedJSON(500, gin.H{"message": err})
+			return
 		}
+		c.IndentedJSON(200, gin.H{"message": "ok"})
 	default:
-		c.IndentedJSON(500, gin.H{"message": "Command not registered: " + s.Command})
+		c.IndentedJSON(204, gin.H{"message": "Command not registered: " + s.Command})
+		return
 	}
 }
 
@@ -81,12 +88,14 @@ func (h SlackHandler) HandleModal(c *gin.Context) {
 	err := util.VerifySlackSigningSecret(c, h.SigninSecret)
 	if err != nil {
 		c.IndentedJSON(401, gin.H{"message": err})
+		return
 	}
 
 	var i slack.InteractionCallback
 	err = json.Unmarshal([]byte(c.Request.FormValue("payload")), &i)
 	if err != nil {
 		c.IndentedJSON(401, gin.H{"message": err})
+		return
 	}
 
 	sendUserId := i.User.ID
@@ -95,10 +104,16 @@ func (h SlackHandler) HandleModal(c *gin.Context) {
 	for _, userID := range userIDs {
 		userIDsMsg += "<@" + userID + ">"
 	}
-	point := i.View.State.Values["Point"]["point"].Value
+	pointStr := i.View.State.Values["Point"]["point"].Value
 	message := i.View.State.Values["Message"]["message"].Value
 
-	msg := fmt.Sprintf("from: <@%s>, to: %s, point: %s, message: %s", sendUserId, userIDsMsg, point, message)
+	point, err := strconv.Atoi(pointStr)
+	if err != nil {
+		c.IndentedJSON(400, gin.H{"message": err})
+		return
+	}
+
+	msg := fmt.Sprintf("from: <@%s>, to: %s, point: %d, message: %s", sendUserId, userIDsMsg, point, message)
 
 	api := slack.New(h.Token)
 	_, _, err = api.PostMessage(
@@ -108,5 +123,7 @@ func (h SlackHandler) HandleModal(c *gin.Context) {
 	)
 	if err != nil {
 		c.IndentedJSON(401, gin.H{"message": err})
+		return
 	}
+	c.IndentedJSON(201, gin.H{"message": "success to post a message"})
 }
