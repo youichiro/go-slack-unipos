@@ -91,11 +91,14 @@ func (h SlackHandler) HandleModal(c *gin.Context) {
 
 	sendUserId := i.User.ID
 	userIDs := i.View.State.Values["Members"]["member"].SelectedUsers
-	userID := userIDs[0]
+	userIDsMsg := ""
+	for _, userID := range userIDs {
+		userIDsMsg += "<@" + userID + ">"
+	}
 	point := i.View.State.Values["Point"]["point"].Value
 	message := i.View.State.Values["Message"]["message"].Value
 
-	msg := fmt.Sprintf("from: <@%s>, to: <@%s>, point: %s, message: %s", sendUserId, userID, point, message)
+	msg := fmt.Sprintf("from: <@%s>, to: %s, point: %s, message: %s", sendUserId, userIDsMsg, point, message)
 
 	api := slack.New(h.Token)
 	_, _, err = api.PostMessage(
