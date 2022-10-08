@@ -15,32 +15,31 @@ type SlackHandler struct {
 }
 
 func generateModalRequest() slack.ModalViewRequest {
-	// Create a ModalViewRequest with a header and two inputs
-	titleText := slack.NewTextBlockObject("plain_text", "My App", false, false)
-	closeText := slack.NewTextBlockObject("plain_text", "Close", false, false)
-	submitText := slack.NewTextBlockObject("plain_text", "Submit", false, false)
+	titleText := slack.NewTextBlockObject("plain_text", "Unipos", false, false)
+	closeText := slack.NewTextBlockObject("plain_text", "とじる", false, false)
+	submitText := slack.NewTextBlockObject("plain_text", "おくる", false, false)
 
-	headerText := slack.NewTextBlockObject("mrkdwn", "Please enter your name", false, false)
-	headerSection := slack.NewSectionBlock(headerText, nil, nil)
+	memberSelectLabel := slack.NewTextBlockObject("plain_text", "誰に送りますか？", false, false)
+	memberSelectPlaceholder := slack.NewTextBlockObject("plain_text", "メンバーを選択してください", false, false)
+	memberSelectOptions := slack.NewOptionsSelectBlockElement(slack.MultiOptTypeUser, memberSelectPlaceholder, "member")
+	memberSelect := slack.NewInputBlock("Select member", memberSelectLabel, nil, memberSelectOptions)
 
-	firstNameText := slack.NewTextBlockObject("plain_text", "First Name", false, false)
-	firstNameHint := slack.NewTextBlockObject("plain_text", "First Name Hint", false, false)
-	firstNamePlaceholder := slack.NewTextBlockObject("plain_text", "Enter your first name", false, false)
-	firstNameElement := slack.NewPlainTextInputBlockElement(firstNamePlaceholder, "firstName")
-	// Notice that blockID is a unique identifier for a block
-	firstName := slack.NewInputBlock("First Name", firstNameText, firstNameHint, firstNameElement)
+	pointLabel := slack.NewTextBlockObject("plain_text", "ポイント", false, false)
+	pointPlaceholder := slack.NewTextBlockObject("plain_text", "39", false, false)
+	pointElement := slack.NewPlainTextInputBlockElement(pointPlaceholder, "point")
+	point := slack.NewInputBlock("Point", pointLabel, nil, pointElement)
 
-	lastNameText := slack.NewTextBlockObject("plain_text", "Last Name", false, false)
-	lastNameHint := slack.NewTextBlockObject("plain_text", "Last Name Hint", false, false)
-	lastNamePlaceholder := slack.NewTextBlockObject("plain_text", "Enter your first name", false, false)
-	lastNameElement := slack.NewPlainTextInputBlockElement(lastNamePlaceholder, "lastName")
-	lastName := slack.NewInputBlock("Last Name", lastNameText, lastNameHint, lastNameElement)
+	messageLabel := slack.NewTextBlockObject("plain_text", "メッセージ本文", false, false)
+	messagePlaceholder := slack.NewTextBlockObject("plain_text", "感謝の気持ちを言葉にしよう！", false, false)
+	messageElement := slack.NewPlainTextInputBlockElement(messagePlaceholder, "message")
+	messageElement.Multiline = true
+	message := slack.NewInputBlock("Message", messageLabel, nil, messageElement)
 
 	blocks := slack.Blocks{
 		BlockSet: []slack.Block{
-			headerSection,
-			firstName,
-			lastName,
+			memberSelect,
+			point,
+			message,
 		},
 	}
 
