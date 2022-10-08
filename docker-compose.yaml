@@ -1,0 +1,26 @@
+version: '3'
+services:
+  postgres:
+    image: postgres:13.4
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - ./db/initdb:/docker-entrypoint-initdb.d
+      - db_data:/var/lib/postgresql/data
+  migrate:
+    build:
+      context: ./db/
+      dockerfile: Dockerfile
+    tty: true
+    volumes:
+      - ./db/migrations/:/opt/db/migrations/
+      - ./db/Makefile:/opt/db/Makefile
+    environment:
+      - POSTGRESQL_URL="postgres://postgres:postgres@postgres:5432/go_slack_unipos_development?sslmode=disable"
+    depends_on:
+      - postgres
+
+volumes:
+  db_data:
