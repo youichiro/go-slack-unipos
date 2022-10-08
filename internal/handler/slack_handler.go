@@ -113,6 +113,8 @@ func (h SlackHandler) HandleModal(c *gin.Context) {
 		return
 	}
 
+	// TODO: ここでポイントを消化するUsecaseを呼び出す
+
 	msg := fmt.Sprintf("from: <@%s>, to: %s, point: %d, message: %s", sendUserId, userIDsMsg, point, message)
 
 	api := slack.New(h.Token)
