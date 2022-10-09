@@ -77,7 +77,6 @@ func (h SlackHandler) HandleSlash(c *gin.Context) {
 			c.IndentedJSON(500, gin.H{"message": err})
 			return
 		}
-		c.IndentedJSON(200, gin.H{"message": "ok"})
 	default:
 		c.IndentedJSON(204, gin.H{"message": "Command not registered: " + s.Command})
 		return
@@ -127,5 +126,4 @@ func (h SlackHandler) HandleModal(c *gin.Context) {
 		c.IndentedJSON(401, gin.H{"message": err})
 		return
 	}
-	c.IndentedJSON(201, gin.H{"message": "success to post a message"})
 }
