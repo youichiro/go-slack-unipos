@@ -14,14 +14,13 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	dbRepo := &repository.PostgresRepository{}
-	err = dbRepo.Connect()
+	db, err := repository.InitDB()
 	if err != nil {
 		panic(err.Error())
 	}
-	defer dbRepo.Close()
+	defer db.Close()
 
-	r := router.SetupRouter()
+	r := router.SetupRouter(db)
 	err = r.Run(":8080")
 	if err != nil {
 		panic(err.Error())

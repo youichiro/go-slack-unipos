@@ -7,15 +7,11 @@ import (
 	_ "github.com/jackc/pgx/v4/stdlib"
 )
 
-type PostgresRepository struct {
-	db *sql.DB
-}
-
-func (repo *PostgresRepository) Connect() error {
+func InitDB() (*sql.DB, error) {
 	dsn := "host=localhost user=postgres password=postgres dbname=go_slack_unipos_development port=5432 sslmode=disable TimeZone=Asia/Tokyo"
 	db, err := sql.Open("pgx", dsn)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	db.SetMaxOpenConns(2)
@@ -24,13 +20,8 @@ func (repo *PostgresRepository) Connect() error {
 
 	err = db.Ping()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	repo.db = db
-	return nil
-}
-
-func (repo *PostgresRepository) Close() {
-	repo.db.Close()
+	return db, nil
 }

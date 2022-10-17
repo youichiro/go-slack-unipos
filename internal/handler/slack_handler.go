@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -9,10 +10,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
+	"github.com/youichiro/go-slack-my-unipos/internal/usecase"
 	"github.com/youichiro/go-slack-my-unipos/internal/util"
 )
 
 type SlackHandler struct {
+	Db           *sql.DB
 	SigninSecret string
 	Token        string
 }
@@ -102,13 +105,8 @@ func (h SlackHandler) HandleModal(c *gin.Context) {
 		c.IndentedJSON(401, gin.H{"message": err})
 		return
 	}
-
-	sendUserId := i.User.ID
-	userIDs := i.View.State.Values["Members"]["member"].SelectedUsers
-	userIDsMsg := ""
-	for _, userID := range userIDs {
-		userIDsMsg += "<@" + userID + ">"
-	}
+	senderSlackUserId := i.User.ID
+	slackUserIDs := i.View.State.Values["Members"]["member"].SelectedUsers
 	pointStr := i.View.State.Values["Point"]["point"].Value
 	message := i.View.State.Values["Message"]["message"].Value
 
@@ -120,8 +118,15 @@ func (h SlackHandler) HandleModal(c *gin.Context) {
 	}
 
 	// TODO: ここでポイントを消化するUsecaseを呼び出す
+	for _, slackUserId := range slackUserIDs {
+		usecase.CreateCardUsecase(c, h.Db, senderSlackUserId, slackUserId, point, message)
+	}
 
-	msg := fmt.Sprintf("from: <@%s>, to: %s, point: %d, message: %s", sendUserId, userIDsMsg, point, message)
+	mentionMsg := ""
+	for _, slackUserID := range slackUserIDs {
+		mentionMsg += "<@" + slackUserID + ">"
+	}
+	msg := fmt.Sprintf("from: <@%s>, to: %s, point: %d, message: %s", senderSlackUserId, mentionMsg, point, message)
 
 	api := slack.New(h.Token)
 	_, _, err = api.PostMessage(
