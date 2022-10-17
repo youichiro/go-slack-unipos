@@ -23,44 +23,44 @@ import (
 
 // Member is an object representing the database table.
 type Member struct {
-	ID        int       `boil:"id" json:"id" toml:"id" yaml:"id"`
-	SlackID   string    `boil:"slack_id" json:"slack_id" toml:"slack_id" yaml:"slack_id"`
-	CreatedAt time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	ID          int       `boil:"id" json:"id" toml:"id" yaml:"id"`
+	SlackUserID string    `boil:"slack_user_id" json:"slack_user_id" toml:"slack_user_id" yaml:"slack_user_id"`
+	CreatedAt   time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
 	R *memberR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L memberL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var MemberColumns = struct {
-	ID        string
-	SlackID   string
-	CreatedAt string
+	ID          string
+	SlackUserID string
+	CreatedAt   string
 }{
-	ID:        "id",
-	SlackID:   "slack_id",
-	CreatedAt: "created_at",
+	ID:          "id",
+	SlackUserID: "slack_user_id",
+	CreatedAt:   "created_at",
 }
 
 var MemberTableColumns = struct {
-	ID        string
-	SlackID   string
-	CreatedAt string
+	ID          string
+	SlackUserID string
+	CreatedAt   string
 }{
-	ID:        "members.id",
-	SlackID:   "members.slack_id",
-	CreatedAt: "members.created_at",
+	ID:          "members.id",
+	SlackUserID: "members.slack_user_id",
+	CreatedAt:   "members.created_at",
 }
 
 // Generated where
 
 var MemberWhere = struct {
-	ID        whereHelperint
-	SlackID   whereHelperstring
-	CreatedAt whereHelpertime_Time
+	ID          whereHelperint
+	SlackUserID whereHelperstring
+	CreatedAt   whereHelpertime_Time
 }{
-	ID:        whereHelperint{field: "\"members\".\"id\""},
-	SlackID:   whereHelperstring{field: "\"members\".\"slack_id\""},
-	CreatedAt: whereHelpertime_Time{field: "\"members\".\"created_at\""},
+	ID:          whereHelperint{field: "\"members\".\"id\""},
+	SlackUserID: whereHelperstring{field: "\"members\".\"slack_user_id\""},
+	CreatedAt:   whereHelpertime_Time{field: "\"members\".\"created_at\""},
 }
 
 // MemberRels is where relationship names are stored.
@@ -101,8 +101,8 @@ func (r *memberR) GetSenderMemberCards() CardSlice {
 type memberL struct{}
 
 var (
-	memberAllColumns            = []string{"id", "slack_id", "created_at"}
-	memberColumnsWithoutDefault = []string{"slack_id"}
+	memberAllColumns            = []string{"id", "slack_user_id", "created_at"}
+	memberColumnsWithoutDefault = []string{"slack_user_id"}
 	memberColumnsWithDefault    = []string{"id", "created_at"}
 	memberPrimaryKeyColumns     = []string{"id"}
 	memberGeneratedColumns      = []string{}
