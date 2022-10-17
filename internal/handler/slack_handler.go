@@ -57,6 +57,7 @@ func (h SlackHandler) HandleModal(c *gin.Context) {
 		return
 	}
 
+	// パラメーターの値を取得する
 	var i slack.InteractionCallback
 	err = json.Unmarshal([]byte(c.Request.FormValue("payload")), &i)
 	if err != nil {
@@ -84,12 +85,12 @@ func (h SlackHandler) HandleModal(c *gin.Context) {
 		return
 	}
 
+	// slackメッセージを送信する
 	mentionMsg := ""
 	for _, slackUserID := range slackUserIDs {
 		mentionMsg += "<@" + slackUserID + ">"
 	}
 	msg := fmt.Sprintf("from: <@%s>, to: %s, point: %d, message: %s", senderSlackUserId, mentionMsg, point, message)
-
 	err = gateway.SlackPostMessage(h.Token, msg)
 	if err != nil {
 		log.Error().Msg(err.Error())
