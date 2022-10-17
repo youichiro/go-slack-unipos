@@ -26,7 +26,7 @@ type Card struct {
 	ID                  int       `boil:"id" json:"id" toml:"id" yaml:"id"`
 	SenderMemberID      int       `boil:"sender_member_id" json:"sender_member_id" toml:"sender_member_id" yaml:"sender_member_id"`
 	DistinationMemberID int       `boil:"distination_member_id" json:"distination_member_id" toml:"distination_member_id" yaml:"distination_member_id"`
-	Point               int16     `boil:"point" json:"point" toml:"point" yaml:"point"`
+	Point               int       `boil:"point" json:"point" toml:"point" yaml:"point"`
 	Message             string    `boil:"message" json:"message" toml:"message" yaml:"message"`
 	CreatedAt           time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
@@ -91,29 +91,6 @@ func (w whereHelperint) NIN(slice []int) qm.QueryMod {
 	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
 }
 
-type whereHelperint16 struct{ field string }
-
-func (w whereHelperint16) EQ(x int16) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.EQ, x) }
-func (w whereHelperint16) NEQ(x int16) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
-func (w whereHelperint16) LT(x int16) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.LT, x) }
-func (w whereHelperint16) LTE(x int16) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
-func (w whereHelperint16) GT(x int16) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
-func (w whereHelperint16) GTE(x int16) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
-func (w whereHelperint16) IN(slice []int16) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
-}
-func (w whereHelperint16) NIN(slice []int16) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
-}
-
 type whereHelperstring struct{ field string }
 
 func (w whereHelperstring) EQ(x string) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.EQ, x) }
@@ -162,14 +139,14 @@ var CardWhere = struct {
 	ID                  whereHelperint
 	SenderMemberID      whereHelperint
 	DistinationMemberID whereHelperint
-	Point               whereHelperint16
+	Point               whereHelperint
 	Message             whereHelperstring
 	CreatedAt           whereHelpertime_Time
 }{
 	ID:                  whereHelperint{field: "\"cards\".\"id\""},
 	SenderMemberID:      whereHelperint{field: "\"cards\".\"sender_member_id\""},
 	DistinationMemberID: whereHelperint{field: "\"cards\".\"distination_member_id\""},
-	Point:               whereHelperint16{field: "\"cards\".\"point\""},
+	Point:               whereHelperint{field: "\"cards\".\"point\""},
 	Message:             whereHelperstring{field: "\"cards\".\"message\""},
 	CreatedAt:           whereHelpertime_Time{field: "\"cards\".\"created_at\""},
 }
