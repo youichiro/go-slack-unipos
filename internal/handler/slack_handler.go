@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"os"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -91,12 +90,7 @@ func (h SlackHandler) HandleModal(c *gin.Context) {
 	}
 	msg := fmt.Sprintf("from: <@%s>, to: %s, point: %d, message: %s", senderSlackUserId, mentionMsg, point, message)
 
-	api := slack.New(h.Token)
-	_, _, err = api.PostMessage(
-		os.Getenv("SLACK_UNIPOS_CHANNEL_ID"),
-		slack.MsgOptionText(msg, false),
-		slack.MsgOptionEnableLinkUnfurl(),
-	)
+	gateway.SlackPostMessage(h.Token, msg)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		c.IndentedJSON(401, gin.H{"message": err})
