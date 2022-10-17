@@ -117,7 +117,7 @@ func (h SlackHandler) HandleModal(c *gin.Context) {
 		return
 	}
 
-	// TODO: ここでポイントを消化するUsecaseを呼び出す
+	// カードを作成する
 	for _, slackUserId := range slackUserIDs {
 		usecase.CreateCardUsecase(c, h.Db, senderSlackUserId, slackUserId, point, message)
 	}
