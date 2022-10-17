@@ -32,6 +32,7 @@ func findOrCreareMember(ctx *gin.Context, db *sql.DB, slackUserId string) (*mode
 
 func CreateCardUsecase(ctx *gin.Context, db *sql.DB, senderSlackUserId string, distinationSlackUserIds []string, point int, message string) error {
 	boil.DebugMode = true
+
 	// 送信元のメンバーを取得する
 	senderMember, err := findOrCreareMember(ctx, db, senderSlackUserId)
 	if err != nil {
