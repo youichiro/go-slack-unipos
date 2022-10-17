@@ -118,8 +118,11 @@ func (h SlackHandler) HandleModal(c *gin.Context) {
 	}
 
 	// カードを作成する
-	for _, slackUserId := range slackUserIDs {
-		usecase.CreateCardUsecase(c, h.Db, senderSlackUserId, slackUserId, point, message)
+	err = usecase.CreateCardUsecase(c, h.Db, senderSlackUserId, slackUserIDs, point, message)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		c.IndentedJSON(500, gin.H{"message": err})
+		return
 	}
 
 	mentionMsg := ""

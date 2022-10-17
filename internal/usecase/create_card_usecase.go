@@ -30,50 +30,55 @@ func findOrCreareMember(ctx *gin.Context, db *sql.DB, slackUserId string) (*mode
 	return member, nil
 }
 
-func CreateCardUsecase(ctx *gin.Context, db *sql.DB, senderSlackUserId string, distinationSlackUserId string, point int, message string) error {
+func CreateCardUsecase(ctx *gin.Context, db *sql.DB, senderSlackUserId string, distinationSlackUserIds []string, point int, message string) error {
 	boil.DebugMode = true
+	// 送信元のメンバーを取得する
 	senderMember, err := findOrCreareMember(ctx, db, senderSlackUserId)
 	if err != nil {
 		return err
 	}
-	distinationMember, err := findOrCreareMember(ctx, db, distinationSlackUserId)
+
+	// カードを取得する
+	cards, err := models.Cards(qm.Where("sender_member_id = ?", senderMember.ID)).All(ctx, db)
 	if err != nil {
 		return err
 	}
 
-	// メンバーのカードを取得する
-	cards, err := models.Cards(qm.Where("sender_member_id = ?", senderMember.ID)).All(ctx, db)
-	if err != nil {
-		log.Info().Msg(err.Error())
-	}
-	fmt.Println(cards)
-
-	// メンバーの残pointを取得する
+	// 残pointを取得する
 	remainPoint := 400
 	if len(cards) > 0 {
 		for _, card := range cards {
 			remainPoint = remainPoint - card.Point
 		}
 	}
+	for i := 0; i < len(distinationSlackUserIds); i++ {
+		remainPoint = remainPoint - point
+	}
 	log.Debug().Msg(fmt.Sprintf("member_id: %d, remainPoint: %d", senderMember.ID, remainPoint))
 
 	// もしポイントが足りなかったらエラーにする
-	if remainPoint-point < 0 {
+	if remainPoint < 0 {
 		return fmt.Errorf("not enough points")
 	}
 
-	// カードを作成する
-	newCard := models.Card{
-		SenderMemberID:      senderMember.ID,
-		DistinationMemberID: distinationMember.ID,
-		Point:               point,
-		Message:             message,
+	// 送信先のメンバーの数だけカードを作成する
+	for _, distinationSlackUserId := range distinationSlackUserIds {
+		distinationMember, err := findOrCreareMember(ctx, db, distinationSlackUserId)
+		if err != nil {
+			return err
+		}
+		newCard := models.Card{
+			SenderMemberID:      senderMember.ID,
+			DistinationMemberID: distinationMember.ID,
+			Point:               point,
+			Message:             message,
+		}
+		err = newCard.Insert(ctx, db, boil.Infer())
+		if err != nil {
+			return err
+		}
+		log.Debug().Msg("A new card is cerated!")
 	}
-	err = newCard.Insert(ctx, db, boil.Infer())
-	if err != nil {
-		return err
-	}
-	log.Debug().Msg("A new card is cerated!")
 
 	return nil
 }
