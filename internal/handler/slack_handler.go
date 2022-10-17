@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
 	"github.com/youichiro/go-slack-my-unipos/internal/util"
 )
@@ -58,12 +59,14 @@ func generateModalRequest() slack.ModalViewRequest {
 func (h SlackHandler) HandleSlash(c *gin.Context) {
 	err := util.VerifySlackSigningSecret(c, h.SigninSecret)
 	if err != nil {
+		log.Warn().Msg(err.Error())
 		c.IndentedJSON(401, gin.H{"message": err})
 		return
 	}
 
 	s, err := slack.SlashCommandParse(c.Request)
 	if err != nil {
+		log.Error().Msg(err.Error())
 		c.IndentedJSON(500, gin.H{"message": err})
 		return
 	}
@@ -74,6 +77,7 @@ func (h SlackHandler) HandleSlash(c *gin.Context) {
 		modalRequest := generateModalRequest()
 		_, err = api.OpenView(s.TriggerID, modalRequest)
 		if err != nil {
+			log.Error().Msg(err.Error())
 			c.IndentedJSON(500, gin.H{"message": err})
 			return
 		}
@@ -86,6 +90,7 @@ func (h SlackHandler) HandleSlash(c *gin.Context) {
 func (h SlackHandler) HandleModal(c *gin.Context) {
 	err := util.VerifySlackSigningSecret(c, h.SigninSecret)
 	if err != nil {
+		log.Warn().Msg(err.Error())
 		c.IndentedJSON(401, gin.H{"message": err})
 		return
 	}
@@ -93,6 +98,7 @@ func (h SlackHandler) HandleModal(c *gin.Context) {
 	var i slack.InteractionCallback
 	err = json.Unmarshal([]byte(c.Request.FormValue("payload")), &i)
 	if err != nil {
+		log.Error().Msg(err.Error())
 		c.IndentedJSON(401, gin.H{"message": err})
 		return
 	}
@@ -108,6 +114,7 @@ func (h SlackHandler) HandleModal(c *gin.Context) {
 
 	point, err := strconv.Atoi(pointStr)
 	if err != nil {
+		log.Error().Msg(err.Error())
 		c.IndentedJSON(400, gin.H{"message": err})
 		return
 	}
@@ -123,6 +130,7 @@ func (h SlackHandler) HandleModal(c *gin.Context) {
 		slack.MsgOptionEnableLinkUnfurl(),
 	)
 	if err != nil {
+		log.Error().Msg(err.Error())
 		c.IndentedJSON(401, gin.H{"message": err})
 		return
 	}
