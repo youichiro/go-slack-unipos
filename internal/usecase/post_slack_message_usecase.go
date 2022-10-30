@@ -9,11 +9,14 @@ import (
 )
 
 func generateMessageBlocks(senderUser *slack.User, targetUsers []*slack.User, message string, point string) []slack.Block {
-	dearBlockElements := make([]slack.MixedElement, len(targetUsers)+1)
-	dearBlockElements = append(dearBlockElements, slack.NewTextBlockObject("plain_text", "to:", false, false))
+	dearBlockElements := make([]slack.MixedElement, len(targetUsers)*2+1)
+	dearBlockElements[0] = slack.NewTextBlockObject("plain_text", "to:", false, false)
+	i := 1
 	for _, user := range targetUsers {
-		dearBlockElements = append(dearBlockElements, slack.NewImageBlockElement(user.Profile.Image48, user.RealName))
-		dearBlockElements = append(dearBlockElements, slack.NewTextBlockObject("mrkdwn", fmt.Sprintf("<@%s>", user.ID), false, false))
+		dearBlockElements[i] = slack.NewImageBlockElement(user.Profile.Image48, user.RealName)
+		i++
+		dearBlockElements[i] = slack.NewTextBlockObject("mrkdwn", fmt.Sprintf("<@%s>", user.ID), false, false)
+		i++
 	}
 	dearBlock := slack.NewContextBlock(
 		"context",
