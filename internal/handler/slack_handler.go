@@ -21,14 +21,14 @@ type SlackHandler struct {
 func (h SlackHandler) HandleSlash(c *gin.Context) {
 	err := util.VerifySlackSigningSecret(c, h.SigninSecret)
 	if err != nil {
-		c.IndentedJSON(401, gin.H{"message": err})
+		c.AbortWithStatusJSON(401, gin.H{"message": err})
 		return
 	}
 
 	s, err := slack.SlashCommandParse(c.Request)
 	if err != nil {
 		util.Logger.Error(err.Error())
-		c.IndentedJSON(500, gin.H{"message": err})
+		c.AbortWithStatusJSON(500, gin.H{"message": err})
 		return
 	}
 
@@ -36,8 +36,7 @@ func (h SlackHandler) HandleSlash(c *gin.Context) {
 	case "/unipos":
 		err := gateway.SlackOpenModal(h.Token, s.TriggerID)
 		if err != nil {
-			util.Logger.Error(err.Error())
-			c.IndentedJSON(500, gin.H{"message": err})
+			c.AbortWithStatusJSON(500, gin.H{"message": err})
 			return
 		}
 	default:
@@ -49,7 +48,7 @@ func (h SlackHandler) HandleSlash(c *gin.Context) {
 func (h SlackHandler) HandleModal(c *gin.Context) {
 	err := util.VerifySlackSigningSecret(c, h.SigninSecret)
 	if err != nil {
-		c.IndentedJSON(401, gin.H{"message": err})
+		c.AbortWithStatusJSON(401, gin.H{"message": err})
 		return
 	}
 
@@ -58,7 +57,7 @@ func (h SlackHandler) HandleModal(c *gin.Context) {
 	err = json.Unmarshal([]byte(c.Request.FormValue("payload")), &i)
 	if err != nil {
 		util.Logger.Error(err.Error())
-		c.IndentedJSON(401, gin.H{"message": err})
+		c.AbortWithStatusJSON(401, gin.H{"message": err})
 		return
 	}
 	senderSlackUserId := i.User.ID
@@ -69,21 +68,21 @@ func (h SlackHandler) HandleModal(c *gin.Context) {
 	point, err := strconv.Atoi(pointStr)
 	if err != nil {
 		util.Logger.Error(err.Error())
-		c.IndentedJSON(400, gin.H{"message": err})
+		c.AbortWithStatusJSON(400, gin.H{"message": err})
 		return
 	}
 
 	// カードを作成する
 	err = usecase.CreateCardUsecase(c, h.Db, senderSlackUserId, slackUserIDs, point, message)
 	if err != nil {
-		c.IndentedJSON(500, gin.H{"message": err})
+		c.AbortWithStatusJSON(500, gin.H{"message": err})
 		return
 	}
 
 	// slackメッセージを送信する
 	err = usecase.PostSlackMessageUsecase(h.Token, senderSlackUserId, slackUserIDs, message, pointStr)
 	if err != nil {
-		c.IndentedJSON(500, gin.H{"message": err})
+		c.AbortWithStatusJSON(500, gin.H{"message": err})
 		return
 	}
 }

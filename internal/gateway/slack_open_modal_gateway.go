@@ -1,6 +1,9 @@
 package gateway
 
-import "github.com/slack-go/slack"
+import (
+	"github.com/slack-go/slack"
+	"github.com/youichiro/go-slack-my-unipos/internal/util"
+)
 
 func generateModalRequest() slack.ModalViewRequest {
 	titleText := slack.NewTextBlockObject("plain_text", "Unipos", false, false)
@@ -45,5 +48,9 @@ func SlackOpenModal(token string, triggerID string) error {
 	api := slack.New(token)
 	modalRequest := generateModalRequest()
 	_, err := api.OpenView(triggerID, modalRequest)
-	return err
+	if err != nil {
+		util.Logger.Error(err.Error())
+		return err
+	}
+	return nil
 }
