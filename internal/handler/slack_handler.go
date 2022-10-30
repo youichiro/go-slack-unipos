@@ -7,7 +7,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/slack-go/slack"
-	"github.com/youichiro/go-slack-my-unipos/internal/gateway"
 	"github.com/youichiro/go-slack-my-unipos/internal/usecase"
 	"github.com/youichiro/go-slack-my-unipos/internal/util"
 )
@@ -34,7 +33,7 @@ func (h SlackHandler) HandleSlash(c *gin.Context) {
 
 	switch s.Command {
 	case "/unipos":
-		err := gateway.SlackOpenModal(h.Token, s.TriggerID)
+		err := usecase.OpenSlackModalUsecase(h.Token, s.TriggerID)
 		if err != nil {
 			c.AbortWithStatusJSON(500, gin.H{"message": err})
 			return
