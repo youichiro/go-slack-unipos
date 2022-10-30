@@ -20,7 +20,8 @@ func generateModalViewRequest() slack.ModalViewRequest {
 	pointPlaceholder := slack.NewTextBlockObject("plain_text", "39", false, false)
 	pointElement := slack.NewPlainTextInputBlockElement(pointPlaceholder, "point")
 	pointElement.MaxLength = 3
-	point := slack.NewInputBlock("Point", pointLabel, nil, pointElement)
+	pointHint := slack.NewTextBlockObject("plain_text", "1人あたりのポイントを選んでください.\nあなたの今週おくれるポイントは "+"100"+" ptです.", false, false)
+	point := slack.NewInputBlock("Point", pointLabel, pointHint, pointElement)
 
 	messageLabel := slack.NewTextBlockObject("plain_text", "メッセージ本文", false, false)
 	messagePlaceholder := slack.NewTextBlockObject("plain_text", "感謝の気持ちを言葉にしよう！", false, false)

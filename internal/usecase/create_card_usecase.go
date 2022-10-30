@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/gin-gonic/gin"
@@ -10,6 +11,8 @@ import (
 	"github.com/youichiro/go-slack-my-unipos/internal/models"
 	"github.com/youichiro/go-slack-my-unipos/internal/util"
 )
+
+const MAX_POINT int = 400
 
 func findOrCreareMember(ctx *gin.Context, db *sql.DB, slackUserId string) (*models.Member, error) {
 	// メンバーを取得する. もし存在しない場合は作成する.
@@ -55,7 +58,7 @@ func CreateCardUsecase(ctx *gin.Context, db *sql.DB, senderSlackUserId string, d
 	}
 
 	// 残pointを取得する
-	remainPoint := 400
+	remainPoint := MAX_POINT
 	if len(cards) > 0 {
 		for _, card := range cards {
 			remainPoint = remainPoint - card.Point
@@ -68,7 +71,7 @@ func CreateCardUsecase(ctx *gin.Context, db *sql.DB, senderSlackUserId string, d
 
 	// もしポイントが足りなかったらエラーにする
 	if remainPoint < 0 {
-		return fmt.Errorf("not enough points")
+		return errors.New("not enough points")
 	}
 
 	// 送信先のメンバーの数だけカードを作成する

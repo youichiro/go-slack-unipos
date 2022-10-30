@@ -8,6 +8,7 @@ import (
 )
 
 func InitDB() (*sql.DB, error) {
+	// TODO: リポジトリになってない
 	dsn := "host=localhost user=postgres password=postgres dbname=go_slack_unipos_development port=5432 sslmode=disable TimeZone=Asia/Tokyo"
 	db, err := sql.Open("pgx", dsn)
 	if err != nil {
