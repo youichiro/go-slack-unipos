@@ -13,14 +13,19 @@ import (
 
 func findOrCreareMember(ctx *gin.Context, db *sql.DB, slackUserId string) (*models.Member, error) {
 	// メンバーを取得する. もし存在しない場合は作成する.
-	var member *models.Member
-	var err error
+	isExists, err := models.Members(qm.Where("slack_user_id = ?", slackUserId)).Exists(ctx, db)
+	if err != nil {
+		return nil, err
+	}
 
-	member, err = models.Members(qm.Where("slack_user_id = ?", slackUserId)).One(ctx, db)
-	if err != nil && err.Error() == "sql: no rows in result set" {
-		member = &models.Member{
-			SlackUserID: slackUserId,
+	var member *models.Member
+	if isExists {
+		member, err = models.Members(qm.Where("slack_user_id = ?", slackUserId)).One(ctx, db)
+		if err != nil {
+			return nil, err
 		}
+	} else {
+		member = &models.Member{SlackUserID: slackUserId}
 		err = member.Insert(ctx, db, boil.Infer())
 		if err != nil {
 			return nil, err
