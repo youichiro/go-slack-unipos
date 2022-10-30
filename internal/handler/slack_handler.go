@@ -3,7 +3,6 @@ package handler
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -86,15 +85,10 @@ func (h SlackHandler) HandleModal(c *gin.Context) {
 	}
 
 	// slackメッセージを送信する
-	mentionMsg := ""
-	for _, slackUserID := range slackUserIDs {
-		mentionMsg += "<@" + slackUserID + ">"
-	}
-	msg := fmt.Sprintf("from: <@%s>, to: %s, point: %d, message: %s", senderSlackUserId, mentionMsg, point, message)
-	err = gateway.SlackPostMessage(h.Token, msg)
+	err = usecase.PostSlackMessageUsecase(h.Token, senderSlackUserId, slackUserIDs, message, point)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		c.IndentedJSON(401, gin.H{"message": err})
+		c.IndentedJSON(500, gin.H{"message": err})
 		return
 	}
 }
