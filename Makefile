@@ -1,7 +1,7 @@
 psql:
 	psql -h localhost -p 5432 -U postgres go_slack_unipos_development
 sqlboiler:
-	sqlboiler psql
+	sqlboiler psql --config ./configs/sqlboiler.toml
 migrate-up:
 	docker compose run --rm migrate make up
 migrate-down:
