@@ -9,10 +9,9 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"github.com/youichiro/go-slack-my-unipos/internal/models"
+	"github.com/youichiro/go-slack-my-unipos/internal/query"
 	"github.com/youichiro/go-slack-my-unipos/internal/util"
 )
-
-const MAX_POINT int = 400
 
 func findOrCreareMember(ctx *gin.Context, db *sql.DB, slackUserId string) (*models.Member, error) {
 	// メンバーを取得する. もし存在しない場合は作成する.
@@ -50,19 +49,10 @@ func CreateCardUsecase(ctx *gin.Context, db *sql.DB, senderSlackUserId string, d
 		return err
 	}
 
-	// カードを取得する
-	cards, err := models.Cards(qm.Where("sender_member_id = ?", senderMember.ID)).All(ctx, db)
-	if err != nil {
-		util.Logger.Error(err.Error())
-		return err
-	}
-
 	// 残pointを取得する
-	remainPoint := MAX_POINT
-	if len(cards) > 0 {
-		for _, card := range cards {
-			remainPoint = remainPoint - card.Point
-		}
+	remainPoint, err := query.RemainPointQuery(ctx, db, senderMember.ID)
+	if err != nil {
+		return err
 	}
 	for i := 0; i < len(distinationSlackUserIds); i++ {
 		remainPoint = remainPoint - point
