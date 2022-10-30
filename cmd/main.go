@@ -6,6 +6,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/youichiro/go-slack-my-unipos/internal/repository"
 	"github.com/youichiro/go-slack-my-unipos/internal/router"
+	"github.com/youichiro/go-slack-my-unipos/internal/util"
 )
 
 func main() {
@@ -19,6 +20,9 @@ func main() {
 		panic(err.Error())
 	}
 	defer db.Close()
+
+	logger := util.SetLogger()
+	defer logger.Sync()
 
 	r := router.SetupRouter(db)
 	err = r.Run(":8080")

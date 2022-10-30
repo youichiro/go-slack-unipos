@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
 	"github.com/youichiro/go-slack-my-unipos/internal/gateway"
 	"github.com/youichiro/go-slack-my-unipos/internal/usecase"
@@ -22,14 +21,13 @@ type SlackHandler struct {
 func (h SlackHandler) HandleSlash(c *gin.Context) {
 	err := util.VerifySlackSigningSecret(c, h.SigninSecret)
 	if err != nil {
-		log.Warn().Msg(err.Error())
 		c.IndentedJSON(401, gin.H{"message": err})
 		return
 	}
 
 	s, err := slack.SlashCommandParse(c.Request)
 	if err != nil {
-		log.Error().Msg(err.Error())
+		util.Logger.Error(err.Error())
 		c.IndentedJSON(500, gin.H{"message": err})
 		return
 	}
@@ -38,7 +36,7 @@ func (h SlackHandler) HandleSlash(c *gin.Context) {
 	case "/unipos":
 		err := gateway.SlackOpenModal(h.Token, s.TriggerID)
 		if err != nil {
-			log.Error().Msg(err.Error())
+			util.Logger.Error(err.Error())
 			c.IndentedJSON(500, gin.H{"message": err})
 			return
 		}
@@ -51,7 +49,6 @@ func (h SlackHandler) HandleSlash(c *gin.Context) {
 func (h SlackHandler) HandleModal(c *gin.Context) {
 	err := util.VerifySlackSigningSecret(c, h.SigninSecret)
 	if err != nil {
-		log.Warn().Msg(err.Error())
 		c.IndentedJSON(401, gin.H{"message": err})
 		return
 	}
@@ -60,7 +57,7 @@ func (h SlackHandler) HandleModal(c *gin.Context) {
 	var i slack.InteractionCallback
 	err = json.Unmarshal([]byte(c.Request.FormValue("payload")), &i)
 	if err != nil {
-		log.Error().Msg(err.Error())
+		util.Logger.Error(err.Error())
 		c.IndentedJSON(401, gin.H{"message": err})
 		return
 	}
@@ -71,7 +68,7 @@ func (h SlackHandler) HandleModal(c *gin.Context) {
 
 	point, err := strconv.Atoi(pointStr)
 	if err != nil {
-		log.Error().Msg(err.Error())
+		util.Logger.Error(err.Error())
 		c.IndentedJSON(400, gin.H{"message": err})
 		return
 	}
@@ -79,15 +76,13 @@ func (h SlackHandler) HandleModal(c *gin.Context) {
 	// カードを作成する
 	err = usecase.CreateCardUsecase(c, h.Db, senderSlackUserId, slackUserIDs, point, message)
 	if err != nil {
-		log.Error().Msg(err.Error())
 		c.IndentedJSON(500, gin.H{"message": err})
 		return
 	}
 
 	// slackメッセージを送信する
-	err = usecase.PostSlackMessageUsecase(h.Token, senderSlackUserId, slackUserIDs, message, point)
+	err = usecase.PostSlackMessageUsecase(h.Token, senderSlackUserId, slackUserIDs, message, pointStr)
 	if err != nil {
-		log.Error().Msg(err.Error())
 		c.IndentedJSON(500, gin.H{"message": err})
 		return
 	}

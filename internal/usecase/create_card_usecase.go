@@ -5,10 +5,10 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
-	"github.com/rs/zerolog/log"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"github.com/youichiro/go-slack-my-unipos/internal/models"
+	"github.com/youichiro/go-slack-my-unipos/internal/util"
 )
 
 func findOrCreareMember(ctx *gin.Context, db *sql.DB, slackUserId string) (*models.Member, error) {
@@ -22,15 +22,17 @@ func findOrCreareMember(ctx *gin.Context, db *sql.DB, slackUserId string) (*mode
 	if isExists {
 		member, err = models.Members(qm.Where("slack_user_id = ?", slackUserId)).One(ctx, db)
 		if err != nil {
+			util.Logger.Error(err.Error())
 			return nil, err
 		}
 	} else {
 		member = &models.Member{SlackUserID: slackUserId}
 		err = member.Insert(ctx, db, boil.Infer())
 		if err != nil {
+			util.Logger.Error(err.Error())
 			return nil, err
 		}
-		log.Debug().Msg("created a new member: " + member.SlackUserID)
+		util.Logger.Debug("created a new member: " + member.SlackUserID)
 	}
 	return member, nil
 }
@@ -41,12 +43,14 @@ func CreateCardUsecase(ctx *gin.Context, db *sql.DB, senderSlackUserId string, d
 	// 送信元のメンバーを取得する
 	senderMember, err := findOrCreareMember(ctx, db, senderSlackUserId)
 	if err != nil {
+		util.Logger.Error(err.Error())
 		return err
 	}
 
 	// カードを取得する
 	cards, err := models.Cards(qm.Where("sender_member_id = ?", senderMember.ID)).All(ctx, db)
 	if err != nil {
+		util.Logger.Error(err.Error())
 		return err
 	}
 
@@ -60,7 +64,7 @@ func CreateCardUsecase(ctx *gin.Context, db *sql.DB, senderSlackUserId string, d
 	for i := 0; i < len(distinationSlackUserIds); i++ {
 		remainPoint = remainPoint - point
 	}
-	log.Debug().Msg(fmt.Sprintf("member_id: %d, remainPoint: %d", senderMember.ID, remainPoint))
+	util.Logger.Debug(fmt.Sprintf("member_id: %d, remainPoint: %d", senderMember.ID, remainPoint))
 
 	// もしポイントが足りなかったらエラーにする
 	if remainPoint < 0 {
@@ -81,9 +85,10 @@ func CreateCardUsecase(ctx *gin.Context, db *sql.DB, senderSlackUserId string, d
 		}
 		err = newCard.Insert(ctx, db, boil.Infer())
 		if err != nil {
+			util.Logger.Error(err.Error())
 			return err
 		}
-		log.Debug().Msg("A new card is cerated!")
+		util.Logger.Debug("A new card is cerated!")
 	}
 
 	return nil

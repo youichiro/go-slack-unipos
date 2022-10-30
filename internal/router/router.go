@@ -10,8 +10,9 @@ import (
 
 func SetupRouter(db *sql.DB) *gin.Engine {
 	r := gin.Default()
+
 	slackHandler := handler.SlackHandler{
-		Db: db,
+		Db:           db,
 		SigninSecret: os.Getenv("SLACK_SIGNING_SECRET"),
 		Token:        os.Getenv("SLACK_BOT_USER_OAUTH_TOKEN"),
 	}
