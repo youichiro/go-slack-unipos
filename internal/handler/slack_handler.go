@@ -33,7 +33,7 @@ func (h SlackHandler) HandleSlash(c *gin.Context) {
 
 	switch s.Command {
 	case "/unipos":
-		err := usecase.OpenSlackModalUsecase(h.Token, s.TriggerID)
+		err := usecase.OpenSlackModalUsecase(c, h.Db, h.Token, s.TriggerID, s.UserID)
 		if err != nil {
 			c.AbortWithStatusJSON(500, gin.H{"message": err})
 			return

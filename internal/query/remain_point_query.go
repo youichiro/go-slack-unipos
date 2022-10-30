@@ -16,14 +16,22 @@ func RemainPointQuery(ctx *gin.Context, db *sql.DB, memberID int) (int, error) {
 	boil.DebugMode = true
 
 	maxWeekPoint, _ := strconv.Atoi(os.Getenv("MAX_WEEK_POINT"))
-	sumPoint, err := models.Cards(
-		qm.Select("point"),
+
+	type SumPoint struct {
+		Sum int `boil:"sum"`
+	}
+	var sumPoint SumPoint
+
+	err := models.NewQuery(
+		qm.Select("sum(point) as sum"),
+		qm.From("cards"),
 		qm.Where("sender_member_id = ?", memberID),
-	).Count(ctx, db)
+	).Bind(ctx, db, &sumPoint)
+
 	if err != nil {
 		util.Logger.Error(err.Error())
 		return 0, err
 	}
-	remainPoint := maxWeekPoint - int(sumPoint)
+	remainPoint := maxWeekPoint - sumPoint.Sum
 	return remainPoint, nil
 }
